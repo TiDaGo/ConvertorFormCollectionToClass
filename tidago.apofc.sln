@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tidago.apofc", "tidago.apofc\tidago.apofc.csproj", "{7D6F1900-2DE2-4A4D-92BF-7F1603D812BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tidago.apofc.nunit", "tidago.apofc.nunit\tidago.apofc.nunit.csproj", "{5D8359B0-D86F-4B74-9B75-53F0DDEFB9E4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D6F1900-2DE2-4A4D-92BF-7F1603D812BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D6F1900-2DE2-4A4D-92BF-7F1603D812BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D6F1900-2DE2-4A4D-92BF-7F1603D812BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D6F1900-2DE2-4A4D-92BF-7F1603D812BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D8359B0-D86F-4B74-9B75-53F0DDEFB9E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D8359B0-D86F-4B74-9B75-53F0DDEFB9E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D8359B0-D86F-4B74-9B75-53F0DDEFB9E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D8359B0-D86F-4B74-9B75-53F0DDEFB9E4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3E58C7F2-ECB4-4B24-AF79-5345FAE6A743}
+	EndGlobalSection
+EndGlobal
