@@ -8,11 +8,11 @@ using tidago.apofc.Interfaces;
 namespace tidago.apofc {
 
     /// <summary>
-    /// Dynamic array of model with key
+    /// Dynamic array of model with key, supported for serialize/deserialize XML
     /// </summary>
     /// <typeparam name="TElement">Type of element</typeparam>
     /// <typeparam name="TKey">Type of element key</typeparam>
-    public class DynamicArray<TKey, TElement> : IEnumerable<TElement>, IDynamicFillModel {
+    public class DynamicArray<TKey, TElement> : ICollection<TElement>, IEnumerable<TElement>, IDynamicFillModel {
         private List<TElement> elements;
 
         public DynamicArray()
@@ -20,10 +20,14 @@ namespace tidago.apofc {
             elements = new List<TElement>();
         }
 
+        int ICollection<TElement>.Count => elements?.Count ?? 0;
+
         /// <summary>
         /// Gets a collection containing the values in the DynamicArray
         /// </summary>
         public IReadOnlyCollection<TElement> Elements => elements;
+
+        bool ICollection<TElement>.IsReadOnly { get; } = false;
 
         /// <summary>
         /// Gets the value associated with the specified key.
@@ -56,6 +60,12 @@ namespace tidago.apofc {
         {
             elements.AddRange(items);
         }
+
+        void ICollection<TElement>.Clear() => elements?.Clear();
+
+        bool ICollection<TElement>.Contains(TElement item) => elements?.Contains(item) ?? false;
+
+        void ICollection<TElement>.CopyTo(TElement[] array, int arrayIndex) => elements?.CopyTo(array, arrayIndex);
 
         public void DynamicFill(IEnumerable<IFormTreeNode> nodes, IPropertyValueConverter converter)
         {
@@ -103,6 +113,8 @@ namespace tidago.apofc {
             var fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
             return HasKey(key, fieldName);
         }
+
+        public bool Remove(TElement item) => elements?.Remove(item) ?? false;
 
         /// <summary>
         /// Check present key in elements.

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using NUnit.Framework;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using tidago.apofc.Helpers;
 
 namespace tidago.apofc.nunit {
@@ -39,6 +41,7 @@ namespace tidago.apofc.nunit {
                 {"WorkInfo.Staff.SecondaryBoss.Phones.Home.Number", "111-11-11" },
             });
         }
+
         [Test]
         public void TestTreeNodesConvertor()
         {
@@ -99,34 +102,91 @@ namespace tidago.apofc.nunit {
             var resultObject = new TestReadonlyModel();
             new ObjectPopulator().Populate(collection, resultObject);
 
-            Assert.AreEqual(resultObject.FirstName, "Petrov");
-            Assert.AreEqual(resultObject.SecondaryName, "Petr");
-            Assert.IsNotNull(resultObject.Salary);
-            Assert.AreEqual(resultObject.Salary.Amount, 10000m);
-            Assert.AreEqual(resultObject.Salary.Rate, "Eur");
+            CheckTestReadonlyModel(resultObject);
+        }
 
-            var mobilePhone = resultObject.Phones.FirstOrDefault(x => x.Type == PhonesType.Mobile);
+        [Test]
+        public void TestJsonSerialize()
+        {
+            var resultObject = new TestReadonlyModel();
+            new ObjectPopulator().Populate(collection, resultObject);
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(resultObject);
+
+            var afterJsonObject = Newtonsoft.Json.JsonConvert.DeserializeObject<TestReadonlyModel>(json);
+
+            CheckTestReadonlyModel(afterJsonObject);
+        }
+
+        [Test]
+        public void TestXmlSerialize()
+        {
+            var resultObject = new TestReadonlyModel();
+            new ObjectPopulator().Populate(collection, resultObject);
+
+            string xml;
+            using (MemoryStream memoryStream = new MemoryStream())
+            using (StreamReader stream = new StreamReader(memoryStream))
+            {
+                DataContractSerializer serializer = new DataContractSerializer(resultObject.GetType());
+                serializer.WriteObject(memoryStream, resultObject);
+                memoryStream.Position = 0;
+                xml = stream.ReadToEnd();
+            }
+
+            using (Stream stream = new MemoryStream())
+            {
+                byte[] data = System.Text.Encoding.UTF8.GetBytes(xml);
+                stream.Write(data, 0, data.Length);
+                stream.Position = 0;
+                DataContractSerializer deserializer = new DataContractSerializer(typeof(TestReadonlyModel));
+                var afterXmlObject = deserializer.ReadObject(stream) as TestReadonlyModel;
+
+                CheckTestReadonlyModel(afterXmlObject);
+            }
+        }
+
+        private void CheckTestReadonlyModel(TestReadonlyModel model)
+        {
+            // check simple property in main model
+            Assert.AreEqual(model.FirstName, "Petrov");
+            Assert.AreEqual(model.SecondaryName, "Petr");
+
+            // check included class to mail model
+            Assert.IsNotNull(model.Salary);
+            // check simple property in included model
+            Assert.AreEqual(model.Salary.Rate, "Eur");
+            // check field of different type for property
+            Assert.AreEqual(model.Salary.Amount, 10000m);
+
+            // check dynamic array
+            Assert.NotNull(model.Phones);
+            var mobilePhone = model.Phones.FirstOrDefault(x => x.Type == PhonesType.Mobile);
+            // check element at dynamic array
             Assert.NotNull(mobilePhone);
+            // check modified property from field
             Assert.AreEqual(mobilePhone.Number, "5555555");
 
-            var homePhone = resultObject.Phones.FirstOrDefault(x => x.Type == PhonesType.Home);
+            // repeat test with other item at phones dynamic array
+            var homePhone = model.Phones.FirstOrDefault(x => x.Type == PhonesType.Home);
             Assert.NotNull(homePhone);
             Assert.AreEqual(homePhone.Number, "6666666");
 
-            var homeAddress = resultObject.Address.FirstOrDefault(x => x.Type == LocationType.Home);
+            // repeat test with other model
+            var homeAddress = model.Address.FirstOrDefault(x => x.Type == LocationType.Home);
             Assert.NotNull(homeAddress);
             Assert.AreEqual(homeAddress.City, "Moscow");
             Assert.AreEqual(homeAddress.Street, "Petrova");
 
-            Assert.NotNull(resultObject.WorkInfo);
-            Assert.NotNull(resultObject.WorkInfo.Address);
-            Assert.AreEqual(resultObject.WorkInfo.Address.City, "Kazan");
+            // repeat test with other item
+            Assert.NotNull(model.WorkInfo);
+            Assert.NotNull(model.WorkInfo.Address);
+            Assert.AreEqual(model.WorkInfo.Address.City, "Kazan");
+            Assert.AreEqual(model.WorkInfo.Address.Street, "Lenina");
 
-            Assert.NotNull(resultObject.WorkInfo.Address);
-            Assert.AreEqual(resultObject.WorkInfo.Address.Street, "Lenina");
-
-            Assert.NotNull(resultObject.WorkInfo.Staff);
-            var staffBoss = resultObject.WorkInfo.Staff.FirstOrDefault(x => x.Type == StaffType.Boss);
+            // Test with many attachments
+            Assert.NotNull(model.WorkInfo.Staff);
+            var staffBoss = model.WorkInfo.Staff.FirstOrDefault(x => x.Type == StaffType.Boss);
             Assert.NotNull(staffBoss);
             Assert.AreEqual(staffBoss.FirstName, "Ivanov");
             Assert.AreEqual(staffBoss.SecondaryName, "Ivan");
@@ -135,7 +195,7 @@ namespace tidago.apofc.nunit {
             Assert.NotNull(staffBossMobile);
             Assert.AreEqual(staffBossMobile.Number, "2222222");
 
-            var secStaffBoss = resultObject.WorkInfo.Staff.FirstOrDefault(x => x.Type == StaffType.SecondaryBoss);
+            var secStaffBoss = model.WorkInfo.Staff.FirstOrDefault(x => x.Type == StaffType.SecondaryBoss);
             Assert.NotNull(secStaffBoss);
             Assert.AreEqual(secStaffBoss.FirstName, "Sidorova");
             Assert.AreEqual(secStaffBoss.SecondaryName, "Anna");
@@ -148,7 +208,7 @@ namespace tidago.apofc.nunit {
             Assert.NotNull(secStaffBossHome);
             Assert.AreEqual(secStaffBossHome.Number, "1111111");
 
-            Assert.NotNull(resultObject.WorkInfo.Address);
+            Assert.NotNull(model.WorkInfo.Address);
         }
 
         private void TestElement(IFormTreeNode[] nodes, string value, params string[] path)
