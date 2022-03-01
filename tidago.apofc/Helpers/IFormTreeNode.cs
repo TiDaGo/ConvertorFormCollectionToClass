@@ -7,11 +7,11 @@
         /// <summary>
         /// Element key from FormCollection element for property name
         /// </summary>
-        string Key { get; set; }
+        string Key { get; }
 
         /// <summary>
         /// Parent form tree node for this element
         /// </summary>
-        IFormTreeNode Parent { get; set; }
+        IFormTreeNode Parent { get; }
     }
 }

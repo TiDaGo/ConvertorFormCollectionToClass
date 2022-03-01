@@ -41,9 +41,9 @@ namespace tidago.apofc {
         /// <param name="collection">The FormCollection.</param>
         /// <param name="fillTObject">The filling object.</param>
         /// <returns>Object after fill value.</returns>
-        public T Populate<T>(FormCollection collection, T fillTObject)
+        public T Populate<T>(IFormCollection collection, T fillTObject)
         {
-            var nodes = FormTreeCollector.ConvertToTree(collection);
+            IFormTreeNode[] nodes = FormTreeCollector.ConvertToTree(collection);
             DynamicFill(nodes, fillTObject);
 
             return fillTObject;
@@ -70,9 +70,14 @@ namespace tidago.apofc {
             object propValue = converter.ConvertToPropertyType(originalPropType, dataValue);
             // Convert property to field
             object fieldValue = Converter.ConvertToFieldType(memberType, propValue);
+
+            return AutoSetValueMember(obj, member, fieldValue);
+        }
+
+        private bool AutoSetValueMember(object obj, MemberInfo member, object fieldValue)
+        {
             // Set new field value
             obj.SetValue(member, fieldValue);
-
             return true;
         }
 
@@ -95,25 +100,31 @@ namespace tidago.apofc {
 
             dynamicFillModeController?.OnStartFillModel(nodes);
 
-            foreach (var node in nodes)
+            foreach (IFormTreeNode node in nodes)
             {
                 // Simple property
                 if (node is FormTreeNode fte)
                 {
                     // Search fields
-                    var (member, declaringType) = MemberHelpers.GetPropertyField(obj, fte.Key);
+                    (MemberInfo member, Type declaringType) = MemberHelpers.GetPropertyField(obj, fte.Key);
 
                     // If FormCollection have other system fields
                     if (member == null)
                         continue;
-                    dynamicFillModeController?.OnBeforeSetPropertyValue(node, fte.Key, fte.Value);
-                    AutoSetValueMember(obj, fte.Key, member, declaringType, fte.Value, Converter);
+                    if (fte.IsFileContent)
+                    {
+                        dynamicFillModeController?.OnBeforeSetPropertyValue(node, fte.Key, fte.FileValue);
+                        AutoSetValueMember(obj, member, fte.FileValue);
+                    } else {
+                        dynamicFillModeController?.OnBeforeSetPropertyValue(node, fte.Key, fte.StringValue);
+                        AutoSetValueMember(obj, fte.Key, member, declaringType, fte.StringValue, Converter);
+                    }
                 }
                 // Properties collection
                 else if (node is FormTreeCollection ftc)
                 {
                     // Search fields
-                    var (member, declaringType) = MemberHelpers.GetPropertyField(obj, node.Key);
+                    (MemberInfo member, Type declaringType) = MemberHelpers.GetPropertyField(obj, node.Key);
 
                     // If FormCollection have other system fields
                     if (member == null)
@@ -124,7 +135,9 @@ namespace tidago.apofc {
                     {
                         includedModel = field.GetValue(obj);
                         if (includedModel == null)
+                        {
                             includedModel = Activator.CreateInstance(field.FieldType);
+                        }
                         dynamicFillModeController?.OnBeforeSetPropertyValue(node, node.Key, includedModel);
                         field.SetValue(obj, includedModel);
                     }
@@ -132,7 +145,9 @@ namespace tidago.apofc {
                     {
                         includedModel = property.GetValue(obj);
                         if (includedModel == null)
+                        {
                             includedModel = Activator.CreateInstance(property.PropertyType);
+                        }
                         dynamicFillModeController?.OnBeforeSetPropertyValue(node, node.Key, includedModel);
                         property.SetValue(obj, includedModel);
                     }

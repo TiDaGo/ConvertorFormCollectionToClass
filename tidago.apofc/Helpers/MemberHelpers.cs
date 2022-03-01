@@ -20,17 +20,20 @@ namespace tidago.apofc.Helpers {
         public static string GetFieldName(MemberInfo member)
         {
             if (member is PropertyInfo)
+            {
                 return member.Name;
+            }
 
-            var fieldName = member.GetCustomAttribute<PropertyFieldAttribute>(false)?.PropertyName;
+            string fieldName = member.GetCustomAttribute<PropertyFieldAttribute>(false)?.PropertyName;
             if (!string.IsNullOrEmpty(fieldName))
+            {
                 return fieldName;
+            }
 
             fieldName = member.GetCustomAttribute<DataMemberAttribute>(false)?.Name;
-            if (!string.IsNullOrEmpty(fieldName))
-                return fieldName;
-
-            throw new NullReferenceException();
+            return !string.IsNullOrEmpty(fieldName) 
+                ? fieldName 
+                : throw new NullReferenceException();
         }
 
         /// <summary>
@@ -135,7 +138,8 @@ namespace tidago.apofc.Helpers {
         /// <returns>true if MemberInfo has an attribute with the requested propertyName</returns>
         private static bool CheckMemberHasLinkToProperty(MemberInfo memberInfo, string propertyName)
         {
-            var result = string.Equals(memberInfo.GetCustomAttribute<PropertyFieldAttribute>(false)?.PropertyName, propertyName)
+            var result = 
+                string.Equals(memberInfo.GetCustomAttribute<PropertyFieldAttribute>(false)?.PropertyName, propertyName)
                 || string.Equals(memberInfo.GetCustomAttribute<DataMemberAttribute>(false)?.Name, propertyName);
             return result;
         }

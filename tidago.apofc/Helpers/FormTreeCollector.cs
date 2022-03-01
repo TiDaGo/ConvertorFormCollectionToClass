@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
-using tidago.apofc.Helpers;
 
 namespace tidago.apofc.Helpers {
 
@@ -12,10 +11,10 @@ namespace tidago.apofc.Helpers {
         /// </summary>
         /// <param name="collection">FormCollection</param>
         /// <returns>Tree from FormCollection</returns>
-        public static IFormTreeNode[] ConvertToTree(this FormCollection collection)
+        public static IFormTreeNode[] ConvertToTree(this IFormCollection collection)
         {
-            var node = new FormTreeCollection("", null);
-            var mkeys = collection.Keys.Select(x => (path: GetPath(x), formKey: x)).ToArray();
+            FormTreeCollection node = new FormTreeCollection("", null);
+            (string[] path, string formKey)[] mkeys = collection.Keys.Select(x => (path: GetPath(x), formKey: x)).ToArray();
             foreach (var (path, formKey) in mkeys)
             {
                 FillCollection(collection, 0, formKey, path, node);
@@ -31,13 +30,13 @@ namespace tidago.apofc.Helpers {
         /// <param name="formKey">Form collection element key</param>
         /// <param name="path">Form collection element path</param>
         /// <param name="parentNode">Filling parent node</param>
-        private static void FillCollection(FormCollection collection, int level, string formKey, string[] path, FormTreeCollection parentNode)
+        private static void FillCollection(IFormCollection collection, int level, string formKey, string[] path, FormTreeCollection parentNode)
         {
             bool isCollection = path.Length > level + 1;
             IFormTreeNode newNode = null;
             if (isCollection)
             {
-                var collectionName = path[level];
+                string collectionName = path[level];
                 if (!(parentNode.GetChield(collectionName) is FormTreeCollection currentNode))
                 {
                     currentNode = new FormTreeCollection(collectionName, parentNode);
@@ -47,8 +46,16 @@ namespace tidago.apofc.Helpers {
             }
             else
             {
-                var fieldName = GetFieldName(formKey);
-                newNode = new FormTreeNode(fieldName, parentNode, collection[formKey]);
+                string fieldName = GetFieldName(formKey);
+                IFormFile file = collection.Files.FirstOrDefault(x => x.Name == formKey);
+                if (file != null)
+                {
+                    newNode = new FormTreeNode(fieldName, parentNode, file);
+                }
+                else
+                {
+                    newNode = new FormTreeNode(fieldName, parentNode, collection[formKey]);
+                }
             }
 
             if (!(newNode is null))
@@ -64,10 +71,10 @@ namespace tidago.apofc.Helpers {
         /// <returns>Field name</returns>
         private static string GetFieldName(string key)
         {
-            var sequence = key.Split('.');
-            if (sequence.Length == 0)
-                return string.Empty;
-            return sequence.LastOrDefault();
+            string[] sequence = key.Split('.');
+            return sequence.Length == 0 
+                ? string.Empty 
+                : sequence.LastOrDefault();
         }
 
         /// <summary>

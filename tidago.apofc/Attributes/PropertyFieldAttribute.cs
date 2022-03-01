@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace tidago.apofc.Attributes {
+namespace tidago.apofc.Attributes
+{
 
     /// <summary>
     /// Attribute for mapping field or property with element of FormCollection
