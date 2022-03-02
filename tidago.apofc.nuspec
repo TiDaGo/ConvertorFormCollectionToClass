@@ -1,27 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<package>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>tidago.apofc</id>
-    <version>1.0.3</version>
+    <version>1.0.4.12</version>
     <authors>Kropotov Igor</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
     <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
-    <title>Convert form collection to class</title>
-    <developmentDependency>true</developmentDependency>
     <icon>images\icon.png</icon>
-    <projectUrl>https://github.com/coverlet-coverage/coverlet</projectUrl>
+    <title>Convert form collection to class</title>
+    <projectUrl>https://github.com/TiDaGo/ConvertorFormCollectionToClass</projectUrl>
     <description>Auto populate form collection to class, Is a cross platform code coverage library for .NET.</description>
-    <tags>formcollection converter to class</tags>
-    <repository type="git" url="https://github.com/TiDaGo/ConvertorFormCollectionToClass.git" />
+    <tags>IFormCollection FormCollection Converter Class</tags>
     <dependencies>
-      <group targetFramework=".NETStandard2.1">
-        <dependency id="SampleDependency" version="1.0.0" />
+      <group targetFramework=".NETFramework5.0">
+        <dependency id="Microsoft.AspNetCore" version="2.2.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.AspNetCore" version="2.2.0" exclude="Build,Analyzers" />
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="tidago.apofc\bin\Debug\netstandard2.0\tidago.apofc.dll" target="build\NETStandard2.1"/>
-	<file src="tidago.apofc\images\icon.png" target="images\" />
+    <file src="tidago.apofc\bin\release\net5.0\tidago.apofc.*" target="lib\net5.0"/>
+    <file src="tidago.apofc\bin\release\netstandard2.0\tidago.apofc.*" target="lib\netstandard2.0"/>
+    <file src="tidago.apofc\images\icon.png" target="images\" />
   </files>
 </package>

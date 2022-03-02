@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
 		<Version>1.0.2</Version>
 		<Authors>Igor Kropotov</Authors>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-	</ItemGroup>
 	
 	<ItemGroup>
 		<None Include="images\icon.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
 	</ItemGroup>
 </Project>
