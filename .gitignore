@@ -4,7 +4,20 @@
 
 /.vs/tidago.apofc
 *.dll
-*/bin/debug
-*/bin/release
-*/obj/debug
-*/obj/release
+*.exe
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options directory
+.vs/
+
+# NuGet Packages
+*.nupkg
+# NuGet Symbol Packages
+*.snupkg

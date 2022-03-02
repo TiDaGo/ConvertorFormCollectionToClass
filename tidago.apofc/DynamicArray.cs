@@ -2,132 +2,136 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
 using tidago.apofc.Helpers;
 using tidago.apofc.Interfaces;
 
-namespace tidago.apofc {
+namespace tidago.apofc
+{
+	/// <summary>
+	/// Dynamic array of model with key, supported for serialize/deserialize XML
+	/// </summary>
+	/// <typeparam name="TElement">Type of element</typeparam>
+	/// <typeparam name="TKey">Type of element key</typeparam>
+	public class DynamicArray<TKey, TElement> : ICollection<TElement>, IEnumerable<TElement>, IDynamicFillModel
+	{
+		private readonly List<TElement> _elements;
 
-    /// <summary>
-    /// Dynamic array of model with key, supported for serialize/deserialize XML
-    /// </summary>
-    /// <typeparam name="TElement">Type of element</typeparam>
-    /// <typeparam name="TKey">Type of element key</typeparam>
-    public class DynamicArray<TKey, TElement> : ICollection<TElement>, IEnumerable<TElement>, IDynamicFillModel {
-        private List<TElement> elements;
+		public DynamicArray()
+		{
+			_elements = new List<TElement>();
+		}
 
-        public DynamicArray()
-        {
-            elements = new List<TElement>();
-        }
+		int ICollection<TElement>.Count => _elements?.Count ?? 0;
 
-        int ICollection<TElement>.Count => elements?.Count ?? 0;
+		/// <summary>
+		/// Gets a collection containing the values in the DynamicArray
+		/// </summary>
+		public IReadOnlyCollection<TElement> Elements => _elements;
 
-        /// <summary>
-        /// Gets a collection containing the values in the DynamicArray
-        /// </summary>
-        public IReadOnlyCollection<TElement> Elements => elements;
+		bool ICollection<TElement>.IsReadOnly { get; } = false;
 
-        bool ICollection<TElement>.IsReadOnly { get; } = false;
+		/// <summary>
+		/// Gets the value associated with the specified key.
+		/// </summary>
+		/// <param name="key">The key of the value to get.</param>
+		/// <returns> The value associated with the specified key. If the specified key is not found,
+		/// a get operation throws a System.Collections.Generic.KeyNotFoundException, and
+		/// a set operation creates a new element with the specified key.</returns>
+		public TElement this[TKey key]
+		{
+			get
+			{
+				string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
+				return _elements.First(x => Equals(x.GetValue<TKey>(fieldName), key));
+			}
+		}
 
-        /// <summary>
-        /// Gets the value associated with the specified key.
-        /// </summary>
-        /// <param name="key">The key of the value to get.</param>
-        /// <returns> The value associated with the specified key. If the specified key is not found,
-        /// a get operation throws a System.Collections.Generic.KeyNotFoundException, and
-        /// a set operation creates a new element with the specified key.</returns>
-        public TElement this[TKey key] {
-            get {
-                var fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
-                return elements.First(x => Equals(x.GetValue<TKey>(fieldName), key));
-            }
-        }
+		/// <summary>
+		///  Adds the specified value to the collection.
+		/// </summary>
+		/// <param name="item">The value of the element to add. The value can be null for reference types.</param>
+		public void Add(TElement item)
+		{
+			_elements.Add(item);
+		}
 
-        /// <summary>
-        ///  Adds the specified value to the collection.
-        /// </summary>
-        /// <param name="item">The value of the element to add. The value can be null for reference types.</param>
-        public void Add(TElement item)
-        {
-            elements.Add(item);
-        }
+		/// <summary>
+		/// Adds the specified values to the collection.
+		/// </summary>
+		/// <param name="items">The values of the elements to add. The values can be null for reference types.</param>
+		public void AddRange(params TElement[] items)
+		{
+			_elements.AddRange(items);
+		}
 
-        /// <summary>
-        /// Adds the specified values to the collection.
-        /// </summary>
-        /// <param name="items">The values of the elements to add. The values can be null for reference types.</param>
-        public void AddRange(params TElement[] items)
-        {
-            elements.AddRange(items);
-        }
+		void ICollection<TElement>.Clear() => _elements?.Clear();
 
-        void ICollection<TElement>.Clear() => elements?.Clear();
+		bool ICollection<TElement>.Contains(TElement item) => _elements?.Contains(item) ?? false;
 
-        bool ICollection<TElement>.Contains(TElement item) => elements?.Contains(item) ?? false;
+		void ICollection<TElement>.CopyTo(TElement[] array, int arrayIndex) => _elements?.CopyTo(array, arrayIndex);
 
-        void ICollection<TElement>.CopyTo(TElement[] array, int arrayIndex) => elements?.CopyTo(array, arrayIndex);
+		public void DynamicFill(IEnumerable<IFormTreeNode> nodes, IPropertyValueConverter converter)
+		{
+			ObjectPopulator objectPopulator = new ObjectPopulator(converter);
+			foreach (IFormTreeNode node in nodes)
+			{
+				TKey propValue = (TKey)converter.ConvertToPropertyType(typeof(TKey), node.Key);
+				TElement element;
+				if (_elements == null || !HasKey(propValue))
+				{
+					element = Activator.CreateInstance<TElement>();
+					Add(element);
+					string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
+					(System.Reflection.MemberInfo field, Type typeOfField) = MemberHelpers.GetPropertyField(element, fieldName);
+					// Convert property to field, for support readonly model
+					object fieldValue = converter.ConvertToFieldType(typeOfField, propValue);
+					element.SetValue(field, fieldValue);
+				}
+				else
+				{
+					element = this[propValue];
+				}
+				if (node is FormTreeCollection formTreeCollection)
+				{
+					objectPopulator.Populate(formTreeCollection.Childs, element);
+				}
+				else
+				{
+					throw new NotSupportedException();
+				}
+			}
+		}
 
-        public void DynamicFill(IEnumerable<IFormTreeNode> nodes, IPropertyValueConverter converter)
-        {
-            var objectPopulator = new ObjectPopulator(converter);
-            foreach (var node in nodes)
-            {
-                var propValue = (TKey)converter.ConvertToPropertyType(typeof(TKey), node.Key);
-                TElement element;
-                if (elements == null || !HasKey(propValue))
-                {
-                    element = Activator.CreateInstance<TElement>();
-                    Add(element);
-                    var fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
-                    var (field, typeOfField) = MemberHelpers.GetPropertyField(element, fieldName);
-                    // Convert property to field, for support readonly model
-                    object fieldValue = converter.ConvertToFieldType(typeOfField, propValue);
-                    element.SetValue(field, fieldValue);
-                }
-                else
-                {
-                    element = this[propValue];
-                }
-                if (node is FormTreeCollection formTreeCollection)
-                {
-                    objectPopulator.Populate(formTreeCollection.Childs, element);
-                }
-                else
-                {
-                    throw new NotSupportedException();
-                }
-            }
-        }
+		public IEnumerator<TElement> GetEnumerator() => _elements.GetEnumerator();
 
-        public IEnumerator<TElement> GetEnumerator() => elements.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+		/// <summary>
+		/// Check present key in elements.
+		/// </summary>
+		/// <param name="key">Search key.</param>
+		/// <returns></returns>
+		public bool HasKey(TKey key)
+		{
+			string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
+			return HasKey(key, fieldName);
+		}
 
-        /// <summary>
-        /// Check present key in elements.
-        /// </summary>
-        /// <param name="key">Search key.</param>
-        /// <returns></returns>
-        public bool HasKey(TKey key)
-        {
-            var fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
-            return HasKey(key, fieldName);
-        }
+		public bool Remove(TElement item) => _elements?.Remove(item) ?? false;
 
-        public bool Remove(TElement item) => elements?.Remove(item) ?? false;
+		/// <summary>
+		/// Check present key in elements.
+		/// </summary>
+		/// <param name="key">Search key.</param>
+		/// <param name="fieldName">Search key in this field</param>
+		/// <returns></returns>
+		protected bool HasKey(TKey key, string fieldName)
+		{
+			if (_elements == null || _elements.Count == 0)
+				return false;
 
-        /// <summary>
-        /// Check present key in elements.
-        /// </summary>
-        /// <param name="key">Search key.</param>
-        /// <param name="fieldName">Search key in this field</param>
-        /// <returns></returns>
-        protected bool HasKey(TKey key, string fieldName)
-        {
-            if (elements == null || elements.Count == 0)
-                return false;
-
-            return elements.Any(x => Equals(x.GetValue<TKey>(fieldName), key));
-        }
-    }
+			return _elements.Any(x => Equals(x.GetValue<TKey>(fieldName), key));
+		}
+	}
 }
