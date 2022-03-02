@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>tidago.apofc</id>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <authors>Kropotov Igor</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
@@ -11,7 +11,7 @@
     <developmentDependency>true</developmentDependency>
     <icon>images\icon.png</icon>
     <projectUrl>https://github.com/coverlet-coverage/coverlet</projectUrl>
-    <description>Auto populate of formcollection, Is a cross platform code coverage library for .NET.</description>
+    <description>Auto populate form collection to class, Is a cross platform code coverage library for .NET.</description>
     <tags>formcollection converter to class</tags>
     <repository type="git" url="https://github.com/TiDaGo/ConvertorFormCollectionToClass.git" />
     <dependencies>
