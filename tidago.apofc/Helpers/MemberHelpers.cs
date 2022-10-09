@@ -141,7 +141,7 @@ namespace tidago.apofc.Helpers
 		/// <returns>true if MemberInfo has an attribute with the requested propertyName</returns>
 		private static bool CheckMemberHasLinkToProperty(MemberInfo memberInfo, string propertyName)
 		{
-			var result =
+			bool result =
 				string.Equals(memberInfo.GetCustomAttribute<PropertyFieldAttribute>(false)?.PropertyName, propertyName)
 				|| string.Equals(memberInfo.GetCustomAttribute<DataMemberAttribute>(false)?.Name, propertyName);
 			return result;

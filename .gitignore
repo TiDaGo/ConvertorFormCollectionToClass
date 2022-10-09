@@ -21,3 +21,4 @@
 *.nupkg
 # NuGet Symbol Packages
 *.snupkg
+*.cmd

@@ -97,7 +97,10 @@ namespace tidago.apofc.nunit {
 
         [JsonProperty, DataMember, PropertyField, KeyPropertyField]
         public StaffType Type { get; set; }
-    }
+
+		[JsonProperty, DataMember, PropertyField]
+		public StaffType? NullableType { get; set; }
+	}
 
     [DataContract]
     public class TestReadonlyModel : IDynamicFillModeController {
@@ -155,12 +158,32 @@ namespace tidago.apofc.nunit {
     [DataContract]
     public class WorkInfo {
 
-        [JsonProperty(nameof(Staff)), DataMember(Name = nameof(Staff)), PropertyField(nameof(Staff))]
-        protected DynamicArray<StaffType, Staff> staff;
+		private DynamicArray<StaffType, Staff> _staffs;
+
+		[JsonProperty(nameof(Staff)), DataMember(Name = nameof(Staff)), PropertyField(nameof(Staff))]
+        public DynamicArray<StaffType, Staff> Staff { get => _staffs; set => _staffs = value; }
 
         [JsonProperty, DataMember, PropertyField]
         public Address Address { get; set; }
 
-        public IReadOnlyCollection<Staff> Staff => staff?.Elements ?? Array.Empty<Staff>();
-    }
+		[JsonProperty, DataMember, PropertyField]
+		public Dictionary<string, string> DictionaryCollection { get; set; }
+
+		private Dictionary<TestEnumKeys, string> _dictionaryEnumCollection;
+
+		[JsonProperty, DataMember, PropertyField]
+		public Dictionary<TestEnumKeys, string> DictionaryEnumCollection {
+			get => _dictionaryEnumCollection;
+			set => _dictionaryEnumCollection = value;
+		}
+	}
+
+	public enum TestEnumKeys
+	{
+		ElementA,
+		ElementB,
+		ElementC,
+		ElementD,
+		ElementE
+	}
 }

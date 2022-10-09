@@ -84,6 +84,24 @@ namespace tidago.apofc
 		}
 
 		/// <summary>
+		/// Dynamic fill IDictionary property
+		/// </summary>
+		/// <param name="dictionary">Fillable model</param>
+		/// <param name="nodes">Values</param>
+		private void FillIDictionary(System.Collections.IDictionary dictionary, IEnumerable<FormTreeNode> nodes)
+		{
+			Type typeOfKey = dictionary.GetType().GenericTypeArguments[0];
+			Type typeOfValue = dictionary.GetType().GenericTypeArguments[1];
+			
+			foreach (FormTreeNode node in nodes)
+			{
+				object key = Converter.ConvertToPropertyType(typeOfKey, node.Key);
+				object value = Converter.ConvertToPropertyType(typeOfValue, node.StringValue);
+				dictionary.Add(key, value);
+			}
+		}
+
+		/// <summary>
 		/// Dynamic fill model
 		/// </summary>
 		/// <typeparam name="T">Type of filling object.</typeparam>
@@ -95,6 +113,8 @@ namespace tidago.apofc
 			{
 				dynamicFillModel.DynamicFill(nodes, Converter);
 				return;
+			} else if (obj is System.Collections.IDictionary dictionary) {
+				FillIDictionary(dictionary, nodes.OfType<FormTreeNode>());
 			}
 
 			if (!(obj is IDynamicFillModeController dynamicFillModeController))
@@ -127,6 +147,7 @@ namespace tidago.apofc
 				// Properties collection
 				else if (node is FormTreeCollection ftc)
 				{
+					//TODO: No implement Array, List, and other IEnumerable class
 					// Search fields
 					(MemberInfo member, Type declaringType) = MemberHelpers.GetPropertyField(obj, node.Key);
 
@@ -135,29 +156,26 @@ namespace tidago.apofc
 						continue;
 
 					object includedModel = null;
-					if (member is FieldInfo field)
+					switch (member)
 					{
-						includedModel = field.GetValue(obj);
-						if (includedModel == null)
-						{
-							includedModel = Activator.CreateInstance(field.FieldType);
-						}
-						dynamicFillModeController?.OnBeforeSetPropertyValue(node, node.Key, includedModel);
-						field.SetValue(obj, includedModel);
-					}
-					else if (member is PropertyInfo property)
-					{
-						includedModel = property.GetValue(obj);
-						if (includedModel == null)
-						{
-							includedModel = Activator.CreateInstance(property.PropertyType);
-						}
-						dynamicFillModeController?.OnBeforeSetPropertyValue(node, node.Key, includedModel);
-						property.SetValue(obj, includedModel);
-					}
-					else
-					{
-						throw new NotImplementedException();
+						case FieldInfo field:
+							includedModel = field.GetValue(obj);
+							if (includedModel == null)
+							{
+								includedModel = Activator.CreateInstance(field.FieldType);
+							}
+							dynamicFillModeController?.OnBeforeSetPropertyValue(node, node.Key, includedModel);
+							break;
+						case PropertyInfo property:
+							includedModel = property.GetValue(obj);
+							if (includedModel == null)
+							{
+								includedModel = Activator.CreateInstance(property.PropertyType);
+							}
+							dynamicFillModeController?.OnBeforeSetPropertyValue(node, node.Key, includedModel);
+							break;
+						default:
+							throw new NotImplementedException();
 					}
 
 					if (includedModel is IDynamicFillModel dynamicCollection)
@@ -168,7 +186,16 @@ namespace tidago.apofc
 					{
 						DynamicFill(ftc.Childs, includedModel);
 					}
-					//TODO: No implement Array, List, and other IEnumerable class
+
+					switch (member)
+					{
+						case FieldInfo field:
+							field.SetValue(obj, includedModel);
+							break;
+						case PropertyInfo property:
+							property.SetValue(obj, includedModel);
+							break;
+					}
 				}
 			}
 			dynamicFillModeController?.OnFinishFillModel(nodes.Select(x => x.Key).ToArray());

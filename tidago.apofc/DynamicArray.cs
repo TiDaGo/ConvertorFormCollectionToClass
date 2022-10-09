@@ -22,6 +22,12 @@ namespace tidago.apofc
 			_elements = new List<TElement>();
 		}
 
+		public bool ContainsKey(TKey key)
+		{
+			string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
+			return _elements.Any(x => Equals(x.GetValue<TKey>(fieldName), key));
+		}
+
 		int ICollection<TElement>.Count => _elements?.Count ?? 0;
 
 		/// <summary>
