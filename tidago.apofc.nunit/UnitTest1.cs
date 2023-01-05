@@ -17,7 +17,7 @@ namespace tidago.apofc.nunit {
 		[SetUp]
 		public void Setup()
 		{
-			collection = new FormCollection(new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>()
+			collection = new FormCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>()
 			{
 				{"TestSystemField", "Value"},
 				{"TestSystemCollection.Field1", "Value"},
@@ -53,7 +53,7 @@ namespace tidago.apofc.nunit {
 				{"WorkInfo.DictionaryEnumCollection.ElementD", "ElementD" },
 			});
 
-			dictionaryCollection = new FormCollection(new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>()
+			dictionaryCollection = new FormCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>()
 			{
 				{"WorkInfo.CollectionData.En", "En" },
 				{"WorkInfo.CollectionData.Fr", "Fr" },
@@ -258,6 +258,26 @@ namespace tidago.apofc.nunit {
 			new ObjectPopulator().Populate(dictionaryCollection, resultObject);
 
 			Assert.True(resultObject.WorkInfo.DictionaryEnumCollection.ContainsKey(TestEnumKeys.ElementA));
+		}
+
+		[Test]
+		public void TestDateTime()
+		{
+			var testCollection = new FormCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>()
+			{
+				{"MyDateTime", "31.12.1990" },
+				{"NullableDateTime", "" },
+			});
+
+			DateTimeTestModel resultObject = new DateTimeTestModel();
+			new ObjectPopulator().Populate(testCollection, resultObject);
+
+			Assert.True(resultObject.NullableDateTime is null);
+
+			DateTimeTestFieldModel resultObject2 = new DateTimeTestFieldModel();
+			new ObjectPopulator().Populate(testCollection, resultObject2);
+
+			Assert.True(resultObject2.NullableDateTime is null);
 		}
 	}
 }

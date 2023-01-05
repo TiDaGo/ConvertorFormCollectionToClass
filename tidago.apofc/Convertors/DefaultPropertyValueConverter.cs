@@ -103,10 +103,16 @@ namespace tidago.apofc.Convertors
 		{
 			if (value is null)
 				return null;
-			if (fieldType == typeof(string))
-				return value.ToString();
-			if (fieldType == typeof(DateTime) || fieldType == typeof(DateTime?))
-				return ((DateTime)value).ToString("yyyy-MM-dd");
+
+			if (value.GetType() != fieldType)
+			{
+				if (fieldType == typeof(string))
+					return value.ToString();
+				if (fieldType == typeof(DateTime?))
+					return ConvertToDateTime(value.ToString(), true);
+				if (fieldType == typeof(DateTime))
+					return ConvertToDateTime(value.ToString());
+			}
 			return value;
 		}
 
