@@ -17,12 +17,13 @@ namespace tidago.apofc.Convertors
 					return null;
 				return false;
 			}
-
+			dataValue = dataValue.Split(',')[0].Trim();
 			if (!bool.TryParse(dataValue, out var result))
 			{
 				result = "1".Equals(dataValue)
 					|| "yes".Equals(dataValue, StringComparison.InvariantCultureIgnoreCase)
-					|| "y".Equals(dataValue, StringComparison.InvariantCultureIgnoreCase);
+					|| "y".Equals(dataValue, StringComparison.InvariantCultureIgnoreCase)
+					|| "true".Equals(dataValue, StringComparison.InvariantCultureIgnoreCase);
 			}
 			return result;
 		}
@@ -104,7 +105,9 @@ namespace tidago.apofc.Convertors
 			if (value is null)
 				return null;
 
-			if (value.GetType() != fieldType)
+			var valueType = value.GetType();
+
+			if (valueType != fieldType)
 			{
 				if (fieldType == typeof(string))
 					return value.ToString();
@@ -112,6 +115,10 @@ namespace tidago.apofc.Convertors
 					return ConvertToDateTime(value.ToString(), true);
 				if (fieldType == typeof(DateTime))
 					return ConvertToDateTime(value.ToString());
+				if (fieldType == typeof(int) && (valueType == typeof(bool) || valueType == typeof(bool?)))
+					return ConvertToInt((bool?)value);
+				if (fieldType == typeof(int?) && (valueType == typeof(bool) || valueType == typeof(bool?)))
+					return ConvertToInt((bool?)value, true);
 			}
 			return value;
 		}
@@ -160,6 +167,17 @@ namespace tidago.apofc.Convertors
 				}
 			}
 			return result;
+		}
+
+		public virtual object ConvertToInt(bool? dataValue, bool hasNull = false)
+		{
+			return dataValue is null
+				? hasNull
+					? (int?)null
+					: 0
+				: dataValue.Value
+					? 1
+					: 0;
 		}
 
 		public virtual object ConvertToInt(string dataValue, bool hasNull = false)

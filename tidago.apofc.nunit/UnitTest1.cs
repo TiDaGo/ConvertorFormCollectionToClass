@@ -5,8 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using tidago.apofc.Helpers;
+using tidago.apofc.nunit.TestObjects;
 
-namespace tidago.apofc.nunit {
+namespace tidago.apofc.nunit
+{
 
 	public class Tests
 	{
@@ -278,6 +280,32 @@ namespace tidago.apofc.nunit {
 			new ObjectPopulator().Populate(testCollection, resultObject2);
 
 			Assert.True(resultObject2.NullableDateTime is null);
+		}
+
+		[Test]
+		public void TestCheckBox()
+		{
+			IFormCollection collection = new FormCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+			{
+				{ "TestBool1", "1,0" },
+				{ "TestBool2", "0" },
+				{ "TestBool3", "Y,N" },
+				{ "TestBool4", "Yes,No" },
+				{ "TestBool5", "True,False" },
+				{ "TestBool6", "True" },
+				{ "TestBool7", "True" },
+			});
+
+			CheckboxTestModel testModel = new CheckboxTestModel();
+			new ObjectPopulator().Populate(collection, testModel);
+
+			Assert.True(testModel.TestBool1);
+			Assert.False(testModel.TestBool2);
+			Assert.True(testModel.TestBool3);
+			Assert.True(testModel.TestBool4);
+			Assert.True(testModel.TestBool5);
+			Assert.True(testModel.TestBool6);
+			Assert.True(testModel.TestBool7);
 		}
 	}
 }
