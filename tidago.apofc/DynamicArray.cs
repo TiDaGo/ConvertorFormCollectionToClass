@@ -22,12 +22,6 @@ namespace tidago.apofc
 			_elements = new List<TElement>();
 		}
 
-		public bool ContainsKey(TKey key)
-		{
-			string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
-			return _elements.Any(x => Equals(x.GetValue<TKey>(fieldName), key));
-		}
-
 		int ICollection<TElement>.Count => _elements?.Count ?? 0;
 
 		/// <summary>
@@ -75,6 +69,11 @@ namespace tidago.apofc
 
 		bool ICollection<TElement>.Contains(TElement item) => _elements?.Contains(item) ?? false;
 
+		public bool ContainsKey(TKey key)
+		{
+			string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
+			return _elements.Any(x => Equals(x.GetValue<TKey>(fieldName), key));
+		}
 		void ICollection<TElement>.CopyTo(TElement[] array, int arrayIndex) => _elements?.CopyTo(array, arrayIndex);
 
 		public void DynamicFill(IEnumerable<IFormTreeNode> nodes, IPropertyValueConverter converter)
@@ -113,6 +112,15 @@ namespace tidago.apofc
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+		/// <summary>
+		///  Gets a collection containing the keys
+		/// </summary>
+		/// <returns>Keys collection</returns>
+		public IReadOnlyCollection<TKey> GetKeys()
+		{
+			string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
+			return _elements?.Select(x => x.GetValue<TKey>(fieldName)).ToArray() ?? Array.Empty<TKey>();
+		}
 		/// <summary>
 		/// Check present key in elements.
 		/// </summary>

@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
-		<Version>1.0.4.16</Version>
+		<Version>1.0.4.17</Version>
 		<Authors>Igor Kropotov</Authors>
 	</PropertyGroup>
 	
