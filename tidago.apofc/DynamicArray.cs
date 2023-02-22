@@ -13,7 +13,7 @@ namespace tidago.apofc
 	/// </summary>
 	/// <typeparam name="TElement">Type of element</typeparam>
 	/// <typeparam name="TKey">Type of element key</typeparam>
-	public class DynamicArray<TKey, TElement> : ICollection<TElement>, IEnumerable<TElement>, IDynamicFillModel
+	public class DynamicArray<TKey, TElement> : ICollection<TElement>, IEnumerable<TElement>, IDynamicFillModel, IDynamicArray
 	{
 		private readonly List<TElement> _elements;
 
@@ -22,7 +22,7 @@ namespace tidago.apofc
 			_elements = new List<TElement>();
 		}
 
-		int ICollection<TElement>.Count => _elements?.Count ?? 0;
+		public int Count => _elements?.Count ?? 0;
 
 		/// <summary>
 		/// Gets a collection containing the values in the DynamicArray
@@ -45,6 +45,11 @@ namespace tidago.apofc
 				string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
 				return _elements.First(x => Equals(x.GetValue<TKey>(fieldName), key));
 			}
+		}
+
+		object IDynamicArray.this[object key]
+		{
+			get { return this[(TKey)key]; }
 		}
 
 		/// <summary>
@@ -74,6 +79,7 @@ namespace tidago.apofc
 			string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
 			return _elements.Any(x => Equals(x.GetValue<TKey>(fieldName), key));
 		}
+
 		void ICollection<TElement>.CopyTo(TElement[] array, int arrayIndex) => _elements?.CopyTo(array, arrayIndex);
 
 		public void DynamicFill(IEnumerable<IFormTreeNode> nodes, IPropertyValueConverter converter)
@@ -121,6 +127,11 @@ namespace tidago.apofc
 			string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
 			return _elements?.Select(x => x.GetValue<TKey>(fieldName)).ToArray() ?? Array.Empty<TKey>();
 		}
+
+		IReadOnlyCollection<object> IDynamicArray.GetKeys()
+		{
+			return GetKeys().Select(x => (object)x).ToArray();
+		}
 		/// <summary>
 		/// Check present key in elements.
 		/// </summary>
@@ -130,6 +141,11 @@ namespace tidago.apofc
 		{
 			string fieldName = MemberHelpers.GetKeyPropertyFieldName<TElement>();
 			return HasKey(key, fieldName);
+		}
+
+		bool IDynamicArray.HasKey(object key)
+		{
+			return HasKey((TKey)key);
 		}
 
 		public bool Remove(TElement item) => _elements?.Remove(item) ?? false;
