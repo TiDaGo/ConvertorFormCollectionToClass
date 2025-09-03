@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0;net8.0;net9.0;netstandard2.0</TargetFrameworks>
-		<Version>1.0.4.19</Version>
+    <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;net5.0;netstandard2.0</TargetFrameworks>
+		<Version>1.0.4.20</Version>
 		<Authors>Igor Kropotov</Authors>
 	</PropertyGroup>
 	
