@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
-		<Version>1.0.4.18</Version>
+		<TargetFrameworks>net5.0;net8.0;net9.0;netstandard2.0</TargetFrameworks>
+		<Version>1.0.4.19</Version>
 		<Authors>Igor Kropotov</Authors>
 	</PropertyGroup>
 	
@@ -11,6 +11,6 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
+	  <PackageReference Include="Microsoft.AspNetCore" Version="2.3.0" />
 	</ItemGroup>
 </Project>
